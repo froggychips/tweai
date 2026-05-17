@@ -1,0 +1,81 @@
+{
+  "manifest_version": 3,
+  "name": "TweAI",
+  "version": "1.8",
+  "description": "AI Reply Assistant for X / Twitter — drafts replies in your voice with personas, translates tweets, and explains posts. BYOK, no subscription.",
+  "permissions": [
+    "storage",
+    "scripting",
+    "activeTab",
+    "webNavigation",
+    "clipboardWrite",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://api.openai.com/*",
+    "https://x.com/*",
+    "https://*.x.com/*",
+    "https://twitter.com/*",
+    "https://*.twitter.com/*",
+    "http://127.0.0.1/*",
+    "http://localhost/*",
+    "https://api.x.ai/*",
+    "https://generativelanguage.googleapis.com/*"
+  ],
+  "options_page": "options.html",
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Tweet Translator AI",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://x.com/*",
+        "https://*.x.com/*",
+        "https://twitter.com/*",
+        "https://*.twitter.com/*",
+        "https://x.com/messages/*",
+        "https://twitter.com/messages/*"
+      ],
+      "js": [
+        "dev-logger.js",
+        "content_script.js"
+      ],
+      "css": [
+        "styles.css"
+      ],
+      "all_frames": true,
+      "match_about_blank": true,
+      "run_at": "document_start"
+    },
+    {
+      "matches": [
+        "https://x.com/*",
+        "https://*.x.com/*",
+        "https://twitter.com/*",
+        "https://*.twitter.com/*"
+      ],
+      "js": [
+        "ad-blocker.js",
+        "profile-scraper.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": false
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

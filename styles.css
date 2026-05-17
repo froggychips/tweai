@@ -1,0 +1,457 @@
+/* === TweAI inline UI — refreshed 2026-05-17 =====================
+   Goals:
+   - one accent (froggy-green) instead of mixed blue/grey/green
+   - real card-grouping for the controls strip (it was a flex spaghetti)
+   - glassmorphism panel that blends with X's dark UI
+   - consistent radii / typography / hover states
+   - explicit "TweAI" brand chip so the panel doesn't look like X chrome
+   ================================================================ */
+
+:root {
+  --tta-font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --tta-font-color: #E7E9EA;
+  --tta-muted: #8A8F94;
+  --tta-rule: rgba(255, 255, 255, .08);
+  --tta-rule-strong: rgba(255, 255, 255, .14);
+  --tta-card: rgba(18, 22, 26, .62);
+  --tta-card-inner: rgba(255, 255, 255, .04);
+  --tta-accent: #5fbf6e;
+  --tta-accent-soft: rgba(95, 191, 110, .14);
+  --tta-accent-strong: rgba(95, 191, 110, .35);
+  --tta-danger: #f87171;
+  --tta-radius: 12px;
+  --tta-radius-sm: 8px;
+  --tta-pill: 999px;
+}
+
+/* === Outer container injected under each tweet === */
+.tta-translation,
+.tta-translation * {
+  font-family: var(--tta-font-family);
+  color: var(--tta-font-color);
+  box-sizing: border-box;
+}
+.tta-translation {
+  margin: 10px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* === Row layout for translate / explain triggers === */
+.tta-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 4px 0;
+}
+.tta-planet {
+  font-size: 16px;
+  line-height: 1.4;
+  cursor: pointer;
+  flex-shrink: 0;
+  user-select: none;
+  transition: transform .15s ease;
+}
+.tta-planet:hover { transform: scale(1.15); }
+
+.tta-translation-text {
+  white-space: pre-wrap;
+  flex: 1;
+  color: var(--tta-font-color);
+}
+[data-tta-translation] {
+  display: block;
+  margin-top: 4px;
+}
+
+/* "Explain" trigger — looks like a soft link, not a button */
+.plain-link {
+  border: 0;
+  background: transparent;
+  padding: 2px 0;
+  color: var(--tta-muted);
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color .15s ease;
+}
+.plain-link:hover {
+  color: var(--tta-accent);
+}
+
+/* === The actual panel (the "window" in the tweet) === */
+.tta-submenu {
+  position: relative;
+  margin-top: 10px;
+  padding: 14px 14px 12px;
+  border-radius: var(--tta-radius);
+  background: var(--tta-card);
+  border: 1px solid var(--tta-rule);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.04) inset,
+    0 8px 32px rgba(0,0,0,.28);
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+.tta-submenu:hover {
+  border-color: var(--tta-accent-strong);
+}
+
+/* Brand chip in the top-right corner of the panel */
+.tta-submenu::before {
+  content: "TweAI";
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--tta-accent);
+  background: var(--tta-accent-soft);
+  padding: 3px 8px;
+  border-radius: var(--tta-pill);
+  border: 1px solid var(--tta-accent-strong);
+  line-height: 1;
+  pointer-events: none;
+}
+
+/* Section labels */
+.tta-explain-title,
+.tta-reply-title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--tta-muted);
+  margin: 0 0 8px;
+}
+
+/* Body text inside panel */
+.tta-explain-body,
+.tta-reply-body {
+  white-space: pre-wrap;
+  background: var(--tta-card-inner);
+  border: 1px solid var(--tta-rule);
+  border-radius: var(--tta-radius-sm);
+  padding: 10px 12px;
+  color: var(--tta-font-color);
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+
+/* legacy bg-* modifiers — keep but harmonize */
+.bg-transparent .tta-submenu {
+  background: transparent;
+  border-style: dashed;
+}
+.bg-subtle .tta-submenu {
+  background: var(--tta-card);
+}
+
+/* === Composer row (✍️ + emoji + textarea) === */
+.tta-compose-line {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--tta-rule);
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tta-compose-btn,
+.tta-emoji-btn {
+  border: 1px solid var(--tta-rule);
+  background: var(--tta-card-inner);
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--tta-radius-sm);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color .15s ease, background .15s ease, transform .15s ease;
+}
+.tta-compose-btn:hover,
+.tta-emoji-btn:hover {
+  border-color: var(--tta-accent-strong);
+  background: var(--tta-accent-soft);
+  transform: translateY(-1px);
+}
+
+.tta-compose-input {
+  display: none;
+  flex: 1 1 100%;
+  min-height: 64px;
+  padding: 10px 12px;
+  border-radius: var(--tta-radius-sm);
+  border: 1px solid var(--tta-rule);
+  background: var(--tta-card-inner);
+  color: var(--tta-font-color);
+  font: inherit;
+  font-size: 13.5px;
+  line-height: 1.5;
+  outline: none;
+  transition: border-color .15s ease;
+  resize: vertical;
+}
+.tta-compose-input.show { display: block; }
+.tta-compose-input:focus {
+  border-color: var(--tta-accent);
+  box-shadow: 0 0 0 3px var(--tta-accent-soft);
+}
+.tta-compose-input::placeholder { color: var(--tta-muted); }
+
+/* === Emoji picker === */
+.tta-emoji-panel {
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 8px;
+  margin-top: 4px;
+  border: 1px solid var(--tta-rule);
+  border-radius: var(--tta-radius-sm);
+  background: var(--tta-card-inner);
+  max-width: 360px;
+}
+.tta-emoji-panel[hidden] { display: none; }
+.tta-emoji-item {
+  border: 0;
+  background: transparent;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background .12s ease;
+}
+.tta-emoji-item:hover { background: var(--tta-accent-soft); }
+
+/* === Reply controls — grouped into its own sub-card === */
+.tta-reply-ctl {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: var(--tta-radius-sm);
+  background: var(--tta-card-inner);
+  border: 1px solid var(--tta-rule);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Primary action: AI Reply */
+.tta-reply-ctl .btn,
+.tta-submenu [data-tta-act="reply"] {
+  order: -1;                    /* keep the trigger first regardless of DOM order */
+  border: 0;
+  border-radius: var(--tta-pill);
+  background: var(--tta-accent);
+  color: #0c1a10 !important;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 7px 14px;
+  cursor: pointer;
+  letter-spacing: .01em;
+  transition: filter .15s ease, transform .15s ease, box-shadow .15s ease;
+  box-shadow: 0 1px 0 rgba(255,255,255,.18) inset, 0 2px 8px var(--tta-accent-soft);
+}
+.tta-reply-ctl .btn:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+  box-shadow: 0 1px 0 rgba(255,255,255,.22) inset, 0 4px 14px var(--tta-accent-strong);
+}
+.tta-reply-ctl .btn:active { transform: translateY(0); }
+
+/* Generic btn fallback (other variants in the codebase) */
+.btn {
+  border: 0;
+  border-radius: var(--tta-pill);
+  padding: 7px 14px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: filter .15s ease, transform .15s ease;
+}
+.btn:hover { filter: brightness(1.05); transform: translateY(-1px); }
+.btn.primary { background: var(--tta-accent); color: #0c1a10; }
+.btn.success { background: var(--tta-accent); color: #0c1a10; }
+
+/* Selects in the controls row */
+.tta-reply-ctl select,
+.tta-submenu [data-style-select],
+.tta-submenu [data-persona-select] {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid var(--tta-rule);
+  background:
+    linear-gradient(45deg, transparent 50%, var(--tta-muted) 50%) calc(100% - 12px) 50% / 5px 5px no-repeat,
+    linear-gradient(135deg, var(--tta-muted) 50%, transparent 50%) calc(100% - 7px) 50% / 5px 5px no-repeat,
+    var(--tta-card-inner);
+  color: var(--tta-font-color) !important;
+  font-size: 12.5px;
+  padding: 5px 24px 5px 10px;
+  border-radius: var(--tta-radius-sm);
+  cursor: pointer;
+  transition: border-color .15s ease;
+}
+.tta-reply-ctl select:hover {
+  border-color: var(--tta-accent-strong);
+}
+.tta-reply-ctl select:focus {
+  outline: none;
+  border-color: var(--tta-accent);
+  box-shadow: 0 0 0 3px var(--tta-accent-soft);
+}
+.tta-reply-ctl select option {
+  background: #16181c;
+  color: var(--tta-font-color);
+}
+
+/* Wrappers around selects show a tiny label above */
+.tta-reply-ctl [data-style-select-wrap]::before {
+  content: "Style";
+  display: block;
+  font-size: 10px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--tta-muted);
+  margin-bottom: 2px;
+}
+.tta-reply-ctl [data-persona-select-wrap]::before {
+  content: "Persona";
+  display: block;
+  font-size: 10px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--tta-muted);
+  margin-bottom: 2px;
+}
+
+/* Checkboxes (Deep / censor) */
+.tta-reply-ctl label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--tta-muted);
+  cursor: pointer;
+  user-select: none;
+}
+.tta-reply-ctl label:hover { color: var(--tta-font-color); }
+
+.tta-reply-ctl input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--tta-rule-strong);
+  border-radius: 3px;
+  background: var(--tta-card-inner);
+  cursor: pointer;
+  position: relative;
+  transition: background .15s ease, border-color .15s ease;
+}
+.tta-reply-ctl input[type="checkbox"]:hover { border-color: var(--tta-accent-strong); }
+.tta-reply-ctl input[type="checkbox"]:checked {
+  background: var(--tta-accent);
+  border-color: var(--tta-accent);
+}
+.tta-reply-ctl input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 0px;
+  width: 4px;
+  height: 8px;
+  border: solid #0c1a10;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.nocensor { color: var(--tta-muted); opacity: .9; }
+
+/* === Reply output === */
+.tta-reply-out {
+  margin-top: 12px;
+}
+.tta-copyline {
+  margin-top: 8px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.tta-copy {
+  border: 1px solid var(--tta-rule);
+  background: var(--tta-card-inner);
+  color: var(--tta-font-color);
+  border-radius: var(--tta-pill);
+  padding: 6px 12px;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color .15s ease, background .15s ease, transform .15s ease;
+}
+.tta-copy:hover {
+  border-color: var(--tta-accent-strong);
+  background: var(--tta-accent-soft);
+}
+
+/* "Tweet" button — primary accent, with an inline arrow glyph */
+.tta-copy-reply {
+  background: var(--tta-accent) !important;
+  color: #0c1a10 !important;
+  border-color: var(--tta-accent) !important;
+  font-weight: 600 !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.tta-copy-reply::after {
+  content: "→";
+  font-weight: 700;
+  transition: transform .15s ease;
+}
+.tta-copy-reply:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+.tta-copy-reply:hover::after { transform: translateX(2px); }
+
+/* === Submenu safety overrides for X's aggressive global styles === */
+.tta-submenu button,
+.tta-submenu [data-tta-act] {
+  font-family: inherit;
+}
+.tta-submenu button:focus-visible,
+.tta-submenu select:focus-visible,
+.tta-submenu input:focus-visible {
+  outline: 2px solid var(--tta-accent);
+  outline-offset: 2px;
+}
+[data-style-select] option { color: initial; }
+
+/* === Tight layout on narrow tweets === */
+@media (max-width: 520px) {
+  .tta-reply-ctl { gap: 8px; }
+  .tta-reply-ctl .btn { width: 100%; order: 999; }   /* full-width button on phones */
+  .tta-submenu::before { top: 8px; right: 10px; }
+}
+
+/* Respect reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .tta-submenu, .btn, .tta-copy, .tta-copy-reply,
+  .tta-compose-btn, .tta-emoji-btn, .tta-planet,
+  .tta-copy-reply::after {
+    transition: none !important;
+    transform: none !important;
+  }
+}

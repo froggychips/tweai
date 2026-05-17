@@ -1,0 +1,15 @@
+{
+  "name": "tweai-mcp-server",
+  "version": "0.1.0",
+  "description": "Local MCP gateway for TweAI — serves stable Twitter data so the extension survives X DOM changes",
+  "main": "server.js",
+  "license": "Apache-2.0",
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "express": "^4.19.2"
+  },
+  "scripts": {
+    "start": "node server.js"
+  }
+}
