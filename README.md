@@ -10,6 +10,22 @@
 
 ---
 
+## Why I built this
+
+2025. I was in Bangkok, my Thai was bad, and X's auto-translate would either
+break the page or render slang as nonsense. I wanted to read the timeline and
+reply like a human, not like Google Translate having a stroke. So TweAI started
+as a personal translator with persona-aware replies — long before X shipped
+the neural one.
+
+Personas, flirt mode, deep author context, the careful work on prompt-injection
+defence — all of that is here because the original use case was actual human
+conversation across a language gap, not "scaling thought leadership." The
+extension was always for one person; it's just open-source now in case you have
+the same problem.
+
+---
+
 ## Features
 
 - ✍️ **AI Reply with personas** — 5 built-in tech-creator personas (Founder, Engineer, Researcher, Casual, Flirt) plus your own custom personas with arbitrary system prompts.
