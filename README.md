@@ -6,16 +6,7 @@
 [![Manifest V3](https://img.shields.io/badge/Chrome-Manifest_V3-yellow.svg)](https://developer.chrome.com/docs/extensions/mv3/intro/)
 [![BYOK](https://img.shields.io/badge/auth-BYOK-success.svg)](#privacy)
 
-<!--
-TODO: replace this block with an animated GIF (≤4 MB, ≤900px wide).
-Record at 24fps with `chrome --window-size=1280,800` showing:
-  1. ✍️ Composer typing a prompt → Enter → reply appears
-  2. AI Reply with persona dropdown (Tech Founder)
-  3. Tweet button: translate → click reply → text inserted
-Save as docs/demo.gif and reference it here:
 ![TweAI demo](docs/demo.gif)
--->
-**[ TODO: demo.gif ]**
 
 ---
 
@@ -37,7 +28,7 @@ Save as docs/demo.gif and reference it here:
 ### From source (recommended while in beta)
 
 ```bash
-git clone https://github.com/froggychips/TweAI.git
+git clone https://github.com/froggychips/tweai.git
 ```
 
 1. Open `chrome://extensions`
@@ -85,7 +76,7 @@ TweAI is **bring-your-own-key**. There is no backend. Your API key, your prompts
 
 ## Security
 
-The extension wraps tweet text in delimiters and explicitly instructs the model to treat it as data, not instructions, defending against the most common prompt-injection attacks. To report a vulnerability, open a [private security advisory](https://github.com/froggychips/TweAI/security/advisories/new). See [`SECURITY.md`](SECURITY.md).
+The extension wraps tweet text in delimiters and explicitly instructs the model to treat it as data, not instructions, defending against the most common prompt-injection attacks. To report a vulnerability, open a [private security advisory](https://github.com/froggychips/tweai/security/advisories/new). See [`SECURITY.md`](SECURITY.md).
 
 ## Roadmap
 
@@ -119,7 +110,7 @@ The project has zero runtime dependencies. Source is plain MV3 JavaScript, no bu
 
 ## Contact
 
-- GitHub Issues: https://github.com/froggychips/TweAI/issues
+- GitHub Issues: https://github.com/froggychips/tweai/issues
 - Telegram: [@froggychips](https://t.me/froggychips)
 
 ## License

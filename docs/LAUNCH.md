@@ -40,7 +40,7 @@ TweAI has no backend. Your API key, your prompts, and the AI responses go direct
 
 SOURCE & LICENSE
 100% open source under Apache-2.0. Read the code, fork it, or send a PR:
-https://github.com/froggychips/TweAI
+https://github.com/froggychips/tweai
 
 WHAT YOU NEED
 - An OpenAI API key (https://platform.openai.com/api-keys). The default model gpt-4o-mini costs ~$0.15 per million input tokens — typically a fraction of a cent per reply.
@@ -52,7 +52,7 @@ INSTALL
 4. Open x.com. The 🤖 Explain, AI Reply, ✍️ Composer, and Tweet buttons will appear under each post.
 
 FEEDBACK & BUGS
-GitHub Issues: https://github.com/froggychips/TweAI/issues
+GitHub Issues: https://github.com/froggychips/tweai/issues
 ```
 
 **Category:** Productivity
@@ -95,7 +95,7 @@ What's deliberately missing:
 
 Built in plain MV3 — zero runtime dependencies, no bundler. ~700 LOC of content_script + 200 of background. Apache-2.0.
 
-Source: https://github.com/froggychips/TweAI
+Source: https://github.com/froggychips/tweai
 Direct GitHub install instructions in the README until the Chrome Store review clears.
 
 Happy to hear feedback, especially on persona prompts.
@@ -134,7 +134,7 @@ every "AI reply for X" extension wraps OpenAI behind a rate-limit and a generic 
 BYOK + Apache-2.0 + 5 tech-creator personas (or write your own) gets you unlimited replies for cents per call.
 
 Code:
-github.com/froggychips/TweAI
+github.com/froggychips/tweai
 ```
 
 **Tweet 3 (feature highlight — pick the one with the best visual):**
@@ -165,7 +165,7 @@ This is a tool, not a SaaS funnel.
 If you've ever opened ChatGPT in another tab to draft a reply — try it.
 
 Install from source today; Chrome Store review pending.
-github.com/froggychips/TweAI
+github.com/froggychips/tweai
 
 ⭐ if it's useful, would help me stay accountable to keeping it free.
 ```
@@ -190,7 +190,7 @@ HN is hit-or-miss for browser extensions but has high signal when it lands. Subm
 Show HN: TweAI – open-source AI reply assistant for X (Twitter), BYOK
 ```
 
-**URL field:** `https://github.com/froggychips/TweAI` (point at the GitHub repo, not the Chrome Store; HN trusts source > store).
+**URL field:** `https://github.com/froggychips/tweai` (point at the GitHub repo, not the Chrome Store; HN trusts source > store).
 
 **No body text.** HN's house style is to put the explanation in the first comment instead.
 

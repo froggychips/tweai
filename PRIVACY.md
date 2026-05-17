@@ -33,4 +33,4 @@ Uninstalling the extension wipes `chrome.storage.local`. To clear `storage.sync`
 
 ## Contact
 
-Open an issue: https://github.com/froggychips/TweAI/issues
+Open an issue: https://github.com/froggychips/tweai/issues

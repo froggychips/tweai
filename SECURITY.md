@@ -3,7 +3,7 @@
 ## Reporting a vulnerability
 
 Please open a private security advisory:
-https://github.com/froggychips/TweAI/security/advisories/new
+https://github.com/froggychips/tweai/security/advisories/new
 
 Or email the maintainer (link in the GitHub profile). Do not file public issues for security problems.
 
