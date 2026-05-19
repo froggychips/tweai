@@ -12,7 +12,31 @@ async function getMcpConfig() {
   return { url: (p.mcpUrl || '').replace(/\/$/, ''), token: p.mcpToken || '' };
 }
 
+// In-memory кэш для MCP-ответов. Service worker может перезапуститься и кэш
+// сбросится — это нормально: MCP отвечает быстро, повторный запрос не страшен.
+// TTL короткий чтобы свежие твиты не залипали.
+const MCP_TTL_MS = 5 * 60 * 1000;
+const mcpCache = new Map(); // path → { value, expiresAt }
+
+function mcpCacheGet(path) {
+  const e = mcpCache.get(path);
+  if (e && e.expiresAt > Date.now()) return e.value;
+  if (e) mcpCache.delete(path);
+  return undefined;
+}
+
+function mcpCachePut(path, value) {
+  mcpCache.set(path, { value, expiresAt: Date.now() + MCP_TTL_MS });
+  // Простой LRU-cap чтобы кэш не разрастался при долгой работе SW.
+  if (mcpCache.size > 200) {
+    const first = mcpCache.keys().next().value;
+    mcpCache.delete(first);
+  }
+}
+
 async function mcpFetch(path) {
+  const cached = mcpCacheGet(path);
+  if (cached !== undefined) return cached;
   const { url, token } = await getMcpConfig();
   if (!url) return null;
   try {
@@ -20,10 +44,15 @@ async function mcpFetch(path) {
       headers: token ? { Authorization: 'Bearer ' + token } : {},
       signal: AbortSignal.timeout(5000),
     });
-    if (!res.ok) return null;
+    if (!res.ok) { mcpCachePut(path, null); return null; }
     const j = await res.json();
-    return j?.ok ? j : null;
-  } catch { return null; }
+    const value = j?.ok ? j : null;
+    mcpCachePut(path, value);
+    return value;
+  } catch {
+    // Сетевые ошибки не кэшируем — следующий вызов попробует снова.
+    return null;
+  }
 }
 
 async function mcpGetProfile(handle) {
@@ -35,6 +64,81 @@ async function mcpGetRecentTweets(handle, count = 5) {
   const r = await mcpFetch('/tweets/' + encodeURIComponent(handle) + '/recent?count=' + count);
   return Array.isArray(r?.tweets) ? r.tweets : null;
 }
+
+// === SW keep-alive ==========================================================
+//
+// MV3 service worker idle-таймится через ~30с бездействия. Когда юзер запускает
+// долгий AI-запрос (>30с), SW может быть выселен в середине fetch, и pending
+// sendResponse теряется. Регистрируем периодический alarm чтобы SW
+// просыпался каждые 25с, пока есть активность.
+
+const INFLIGHT_KEY = 'tta_inflight_requests';
+let inflightCount = 0;
+let keepAliveActive = false;
+
+function startKeepAlive() {
+  if (keepAliveActive) return;
+  keepAliveActive = true;
+  try {
+    chrome.alarms?.create('tta-keepalive', { periodInMinutes: 25 / 60 });
+  } catch {}
+}
+
+function stopKeepAlive() {
+  if (!keepAliveActive) return;
+  keepAliveActive = false;
+  try {
+    chrome.alarms?.clear('tta-keepalive');
+  } catch {}
+}
+
+try {
+  chrome.alarms?.onAlarm?.addListener(() => { /* no-op: пробуждение SW */ });
+} catch {}
+
+// Оборачиваем долгоиграющие AI-вызовы: помечаем in-flight в storage.session
+// (если SW умрёт и поднимется заново — sweepInflight найдёт незавершённые
+// запросы и пометит их как failed, чтобы UI получил понятную ошибку).
+async function withInflightTracking(label, fn) {
+  const id = Math.random().toString(36).slice(2, 10);
+  const record = { id, label, startedAt: Date.now() };
+  inflightCount++;
+  startKeepAlive();
+  try {
+    const session = chrome.storage?.session;
+    if (session) {
+      const cur = await new Promise(r => session.get({ [INFLIGHT_KEY]: {} }, r));
+      cur[INFLIGHT_KEY][id] = record;
+      await new Promise(r => session.set(cur, r));
+    }
+    return await fn();
+  } finally {
+    inflightCount = Math.max(0, inflightCount - 1);
+    if (inflightCount === 0) stopKeepAlive();
+    const session = chrome.storage?.session;
+    if (session) {
+      const cur = await new Promise(r => session.get({ [INFLIGHT_KEY]: {} }, r));
+      delete cur[INFLIGHT_KEY][id];
+      await new Promise(r => session.set(cur, r));
+    }
+  }
+}
+
+// При старте SW: смотрим, не остались ли висеть запросы с прошлой жизни.
+// Сейчас просто чистим — auto-retry опасен (юзер может уже видеть ошибку
+// и нажал retry сам). В будущем можно слать TTA_INFLIGHT_LOST event в UI.
+(async () => {
+  try {
+    const session = chrome.storage?.session;
+    if (!session) return;
+    const cur = await new Promise(r => session.get({ [INFLIGHT_KEY]: {} }, r));
+    const stale = Object.keys(cur[INFLIGHT_KEY] || {});
+    if (stale.length) {
+      console.warn('[TweAI] SW restart: %d stale in-flight request(s) cleared', stale.length);
+      await new Promise(r => session.set({ [INFLIGHT_KEY]: {} }, r));
+    }
+  } catch {}
+})();
 
 // === Personas ===============================================================
 
@@ -264,16 +368,18 @@ const PROVIDERS = {
 };
 
 async function callAI(provider, model, messages, temperature) {
-  await checkBudget();
   const cfg = PROVIDERS[provider] || PROVIDERS.openai;
-  const prefs = await getPrefs();
-  const apiKey = prefs[cfg.keyField];
-  if (!apiKey) throw new Error(`Missing ${cfg.label} API key`);
-  const req = cfg.buildRequest(apiKey, model, messages, temperature);
-  const j = await aiFetch(req.url, req.headers, req.body, { label: cfg.label });
-  const { text, usage } = cfg.parseResponse(j);
-  if (usage) await addUsage(usage);
-  return text;
+  return withInflightTracking(`${provider}:${model}`, async () => {
+    await checkBudget();
+    const prefs = await getPrefs();
+    const apiKey = prefs[cfg.keyField];
+    if (!apiKey) throw new Error(`Missing ${cfg.label} API key`);
+    const req = cfg.buildRequest(apiKey, model, messages, temperature);
+    const j = await aiFetch(req.url, req.headers, req.body, { label: cfg.label });
+    const { text, usage } = cfg.parseResponse(j);
+    if (usage) await addUsage(usage);
+    return text;
+  });
 }
 
 // === Language helpers =======================================================
