@@ -108,21 +108,22 @@ The extension wraps tweet text in delimiters and explicitly instructs the model 
 
 ## Releasing
 
-Build a Chrome Web Store zip:
-
 ```bash
-zip -r tweai-v1.7.zip . \
-  -x '.git/*' '.gitignore' 'docs/*' 'env.json' \
-     '*.md' 'env.template.json' 'package.json' 'node_modules/*'
+npm install
+npm run lint
+npm run format
+npm run package          # → dist/ + tweai-v<version>.zip
 ```
 
-Launch-day copy (Chrome Store listing, Product Hunt, tech-twitter thread, HN, Reddit) lives in [`docs/LAUNCH.md`](docs/LAUNCH.md). Demo GIF instructions are in [`docs/RECORDING.md`](docs/RECORDING.md).
+`tools/build.mjs` builds the CWS-ready zip with the right inclusions (no `tweai-mcp-server/`, no `docs/`). The same script runs in [`.github/workflows/release.yml`](.github/workflows/release.yml) — pushing a `v*` tag uploads a GitHub release with the zip attached automatically.
+
+CWS submission checklist: [`docs/CWS_REVIEW.md`](docs/CWS_REVIEW.md). Launch-day copy: [`docs/LAUNCH.md`](docs/LAUNCH.md). Demo GIF: [`docs/RECORDING.md`](docs/RECORDING.md).
 
 ## Contributing
 
-PRs welcome. Run `npx --yes web-ext lint --source-dir .` before opening one — the only acceptable lint output is the 2 Firefox-specific errors and 2 warnings (we target Chrome MV3 only).
+See [CONTRIBUTING.md](CONTRIBUTING.md) for project layout, local dev, and PR conventions. Architecture overview lives in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). If something on x.com stops working, start with [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md).
 
-The project has zero runtime dependencies. Source is plain MV3 JavaScript, no bundler, no minifier.
+The project has zero runtime dependencies. Source is plain MV3 JavaScript; only `eslint` and `prettier` ship as dev-deps.
 
 ## Contact
 
