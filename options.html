@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>TweAI — Настройки</title>
+  <title data-i18n="page_title">TweAI — Settings</title>
   <link rel="stylesheet" href="options.css">
   <link rel="stylesheet" href="styles.css">
   <style>
@@ -174,7 +174,7 @@
 
     <div class="page-title">
       <span class="page-title-text">TweAI</span>
-      <span class="page-title-sub">Настройки</span>
+      <span class="page-title-sub" data-i18n="header_subtitle">Settings</span>
     </div>
 
     <!-- ── Cards ─────────────────────────────────────────────────────────── -->
@@ -185,10 +185,10 @@
         <div class="feat-card-main">
           <div class="feat-card-icon" id="card-provider-icon">🔑</div>
           <div class="feat-card-body">
-            <div class="feat-card-title">AI-провайдер</div>
-            <div class="feat-card-sub" id="card-provider-sub">Ключ не введён</div>
+            <div class="feat-card-title" data-i18n="card_provider_title">AI Provider</div>
+            <div class="feat-card-sub" id="card-provider-sub" data-i18n="card_provider_sub_no_key">No API key</div>
           </div>
-          <button class="btn" id="provider-toggle-btn" style="white-space:nowrap;">Настроить</button>
+          <button class="btn" id="provider-toggle-btn" style="white-space:nowrap;" data-i18n="btn_configure">Configure</button>
         </div>
         <div class="feat-card-extra" id="provider-edit" style="display:none;">
           <div class="tab-bar">
@@ -198,11 +198,11 @@
           </div>
           <div class="provider-tab active" id="ptab-openai">
             <label>
-              <span>API key <a href="https://platform.openai.com/api-keys" target="_blank" class="get-key-link">Get key →</a></span>
+              <span><span data-i18n="label_api_key">API key</span> <a href="https://platform.openai.com/api-keys" target="_blank" class="get-key-link" data-i18n="link_get_key">Get key →</a></span>
               <input type="password" id="apiKey" placeholder="sk-…"/>
             </label>
             <div id="testResult" class="key-status"></div>
-            <label><span>Модель — Перевод</span>
+            <label><span data-i18n="label_model_translate">Model — Translate</span>
               <select id="translateModel">
                 <option value="gpt-4o-mini" selected>gpt-4o-mini</option>
                 <option value="gpt-4o">gpt-4o</option>
@@ -210,7 +210,7 @@
                 <option value="gpt-5">gpt-5</option>
               </select>
             </label>
-            <label><span>Модель — Объяснение</span>
+            <label><span data-i18n="label_model_explain">Model — Explain</span>
               <select id="explainModel">
                 <option value="gpt-4o" selected>gpt-4o</option>
                 <option value="gpt-4o-mini">gpt-4o-mini</option>
@@ -218,7 +218,7 @@
                 <option value="gpt-5">gpt-5</option>
               </select>
             </label>
-            <label><span>Модель — Ответы</span>
+            <label><span data-i18n="label_model_reply">Model — Reply</span>
               <select id="replyModel">
                 <option value="gpt-4o" selected>gpt-4o</option>
                 <option value="gpt-4o-mini">gpt-4o-mini</option>
@@ -229,27 +229,27 @@
           </div>
           <div class="provider-tab" id="ptab-grok">
             <label>
-              <span>API key <a href="https://console.x.ai" target="_blank" class="get-key-link">Get key →</a></span>
+              <span><span data-i18n="label_api_key">API key</span> <a href="https://console.x.ai" target="_blank" class="get-key-link" data-i18n="link_get_key">Get key →</a></span>
               <input type="password" id="grokApiKey" placeholder="xai-…"/>
             </label>
             <div id="testGrokResult" class="key-status"></div>
-            <label><span>Модель</span>
+            <label><span data-i18n="label_model">Model</span>
               <select id="grokModel">
-                <option value="grok-3-mini-fast">grok-3-mini-fast (быстрый)</option>
+                <option value="grok-3-mini-fast" data-i18n="grok_mini_fast">grok-3-mini-fast (fast)</option>
                 <option value="grok-3-mini" selected>grok-3-mini</option>
-                <option value="grok-3">grok-3 (лучшее качество)</option>
+                <option value="grok-3" data-i18n="grok_3_best">grok-3 (best quality)</option>
               </select>
             </label>
           </div>
           <div class="provider-tab" id="ptab-gemini">
             <label>
-              <span>API key <a href="https://aistudio.google.com/app/apikey" target="_blank" class="get-key-link">Get key →</a></span>
+              <span><span data-i18n="label_api_key">API key</span> <a href="https://aistudio.google.com/app/apikey" target="_blank" class="get-key-link" data-i18n="link_get_key">Get key →</a></span>
               <input type="password" id="geminiApiKey" placeholder="AIza…"/>
             </label>
             <div id="testGeminiResult" class="key-status"></div>
-            <label><span>Модель</span>
+            <label><span data-i18n="label_model">Model</span>
               <select id="geminiModel">
-                <option value="gemini-2.0-flash" selected>gemini-2.0-flash (бесплатный)</option>
+                <option value="gemini-2.0-flash" selected data-i18n="gemini_flash_free">gemini-2.0-flash (free tier)</option>
                 <option value="gemini-1.5-flash">gemini-1.5-flash</option>
                 <option value="gemini-1.5-pro">gemini-1.5-pro</option>
                 <option value="gemini-2.5-pro">gemini-2.5-pro</option>
@@ -264,16 +264,16 @@
         <div class="feat-card-main">
           <div class="feat-card-icon">🌐</div>
           <div class="feat-card-body">
-            <div class="feat-card-title">Перевод твитов</div>
-            <div class="feat-card-sub" id="card-translate-sub">Автоматически в ленте</div>
+            <div class="feat-card-title" data-i18n="card_translate_title">Translate tweets</div>
+            <div class="feat-card-sub" id="card-translate-sub" data-i18n="card_translate_sub">Automatically in the timeline</div>
           </div>
           <button class="big-toggle" id="toggle-translate"></button>
         </div>
         <div class="feat-card-extra" id="translate-extra" style="display:none;">
           <label>
-            <span>Переводить на</span>
+            <span data-i18n="label_translate_to">Translate to</span>
             <select id="targetLanguage">
-              <option value="auto">Как в браузере (авто)</option>
+              <option value="auto" data-i18n="lang_auto">Browser language (auto)</option>
               <option value="en">English</option>
               <option value="zh">中文 (Chinese)</option>
               <option value="es">Español</option>
@@ -305,13 +305,13 @@
         <div class="feat-card-main">
           <div class="feat-card-icon">🤖</div>
           <div class="feat-card-body">
-            <div class="feat-card-title">AI-помощник</div>
-            <div class="feat-card-sub">Ответы и объяснения твитов</div>
+            <div class="feat-card-title" data-i18n="card_ai_title">AI Assistant</div>
+            <div class="feat-card-sub" data-i18n="card_ai_sub">Replies and tweet explanations</div>
           </div>
         </div>
         <div class="feat-card-extra">
           <label>
-            <span>Персона</span>
+            <span data-i18n="label_persona">Persona</span>
             <select id="persona"><!-- populated from TTA_LIST_PERSONAS --></select>
           </label>
           <div id="persona-hint" class="hint" style="padding-left:2px;min-height:14px;"></div>
@@ -323,31 +323,31 @@
         <div class="feat-card-main">
           <div class="feat-card-icon">🚫</div>
           <div class="feat-card-body">
-            <div class="feat-card-title">Блокировать рекламу</div>
-            <div class="feat-card-sub">Убирать Promoted-посты</div>
+            <div class="feat-card-title" data-i18n="card_ad_title">Block ads</div>
+            <div class="feat-card-sub" data-i18n="card_ad_sub">Hide promoted posts</div>
           </div>
           <button class="big-toggle" id="toggle-ad"></button>
         </div>
         <div class="feat-card-extra" id="ad-extra" style="display:none;">
-          <div class="tos-warn" id="adTosWarn">
-            ⚠️ <b>Внимание:</b> блокировка Promoted-постов нарушает <a href="https://x.com/en/tos" target="_blank" style="color:#fca5a5;">ToS X</a>. Используете на свой риск.
+          <div class="tos-warn" id="adTosWarn" data-i18n-html="ad_tos_warn_html">
+            ⚠️ <b>Heads-up:</b> blocking promoted posts violates the <a href="https://x.com/en/tos" target="_blank" style="color:#fca5a5;">X ToS</a>. Use at your own risk.
           </div>
           <label>
-            <span>Режим</span>
+            <span data-i18n="label_mode">Mode</span>
             <select id="adMode">
-              <option value="remove">Удалять полностью</option>
-              <option value="message">Показывать заглушку</option>
-              <option value="chill">Chill mode (котики 🐱)</option>
+              <option value="remove" data-i18n="ad_mode_remove">Remove fully</option>
+              <option value="message" data-i18n="ad_mode_message">Show placeholder</option>
+              <option value="chill" data-i18n="ad_mode_chill">Chill mode (cats 🐱)</option>
             </select>
           </label>
           <label class="row">
             <input type="checkbox" id="adPanel"/>
-            <span>Плавающая панель со счётчиком</span>
+            <span data-i18n="ad_floating_panel">Floating counter panel</span>
           </label>
-          <div class="hint">Заблокировано: <b id="adCount">0</b> &nbsp;<span id="adLast">—</span></div>
+          <div class="hint"><span data-i18n="ad_blocked_label">Blocked:</span> <b id="adCount">0</b> &nbsp;<span id="adLast">—</span></div>
           <div class="row-btns">
-            <button id="adRefresh" class="btn">Обновить</button>
-            <button id="adSave" class="btn primary">Сохранить</button>
+            <button id="adRefresh" class="btn" data-i18n="btn_refresh">Refresh</button>
+            <button id="adSave" class="btn primary" data-i18n="btn_save">Save</button>
           </div>
         </div>
         <input type="checkbox" id="adEnabled" hidden/>
@@ -358,23 +358,23 @@
         <div class="feat-card-main">
           <div class="feat-card-icon">🎨</div>
           <div class="feat-card-body">
-            <div class="feat-card-title">Внешний вид</div>
-            <div class="feat-card-sub">Шрифт и фон AI-блоков</div>
+            <div class="feat-card-title" data-i18n="card_appearance_title">Appearance</div>
+            <div class="feat-card-sub" data-i18n="card_appearance_sub">Font and background of AI blocks</div>
           </div>
         </div>
         <div class="feat-card-extra">
           <label>
-            <span>Шрифт</span>
+            <span data-i18n="label_font">Font</span>
             <div class="font-picker">
               <button type="button" class="font-picker-trigger" id="fontPickerTrigger">
-                <span id="fontPickerCurrent">System UI</span>
+                <span id="fontPickerCurrent" data-i18n="font_system">System UI</span>
                 <span class="arrow">▾</span>
               </button>
               <div class="font-picker-list" id="fontPickerList" hidden></div>
             </div>
           </label>
           <select id="fontFamily" hidden>
-            <option value="system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial">System UI</option>
+            <option value="system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial" data-i18n="font_system">System UI</option>
             <option value="Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial">Inter</option>
             <option value="Roboto, system-ui, -apple-system, Segoe UI, Helvetica, Arial">Roboto</option>
             <option value="Helvetica, Arial, sans-serif">Helvetica / Arial</option>
@@ -382,36 +382,36 @@
             <option value="Courier New, monospace">Courier New</option>
           </select>
           <label>
-            <span>Цвет текста</span>
+            <span data-i18n="label_text_color">Text color</span>
             <input type="color" id="fontColor" value="#D1D5DB"/>
           </label>
           <label>
-            <span>Фон блока</span>
+            <span data-i18n="label_block_bg">Block background</span>
             <select id="bgStyle">
-              <option value="transparent">Прозрачный</option>
-              <option value="subtle">Лёгкий фон</option>
+              <option value="transparent" data-i18n="bg_transparent">Transparent</option>
+              <option value="subtle" data-i18n="bg_subtle">Subtle</option>
             </select>
           </label>
 
           <!-- Live preview -->
           <div class="ap-preview">
-            <div class="ap-preview-label">Предпросмотр</div>
+            <div class="ap-preview-label" data-i18n="preview_label">Preview</div>
             <div class="ap-tweet">
               <div class="ap-avatar">🐦</div>
               <div class="ap-tweet-body">
                 <div class="ap-tweet-meta">
-                  <span class="ap-tweet-name">Tech Guy</span>
-                  <span class="ap-tweet-handle">@techguy · 2m</span>
+                  <span class="ap-tweet-name" data-i18n="preview_name">Tech Guy</span>
+                  <span class="ap-tweet-handle" data-i18n="preview_handle_meta">@techguy · 2m</span>
                 </div>
-                <div class="ap-tweet-text">Just shipped something wild. You'll see soon 🚀</div>
+                <div class="ap-tweet-text" data-i18n="preview_text">Just shipped something wild. You'll see soon 🚀</div>
                 <div class="tta-translation bg-transparent" id="preview-tta-block">
                   <div class="tta-row">
                     <span class="tta-planet">🌐</span>
-                    <div class="tta-translation-text">Только что выпустил кое-что дикое. Скоро увидишь 🚀</div>
+                    <div class="tta-translation-text" data-i18n="preview_translated">Just shipped something wild. You'll see soon 🚀</div>
                   </div>
                   <div class="tta-submenu" style="margin-top:8px;">
-                    <div class="tta-explain-title">🤖 Объяснение</div>
-                    <div class="tta-explain-body">Автор анонсирует релиз, интригует аудиторию. Тон: оптимистичный.</div>
+                    <div class="tta-explain-title" data-i18n="preview_explain_title">🤖 Explanation</div>
+                    <div class="tta-explain-body" data-i18n="preview_explain_body">Author teases an upcoming release. Tone: optimistic.</div>
                   </div>
                 </div>
               </div>
@@ -422,25 +422,25 @@
 
     </div><!-- /cards-layout -->
 
-    <!-- ── Расширенные настройки ──────────────────────────────────────── -->
+    <!-- ── Advanced settings ──────────────────────────────────────── -->
     <details class="adv-section">
-      <summary>⚙️ Расширенные настройки</summary>
+      <summary data-i18n="adv_section_title">⚙️ Advanced settings</summary>
       <div class="adv-inner">
 
-        <!-- 1. Кто что делает -->
+        <!-- 1. Who does what -->
         <section>
-          <h2>🎯 Кто что делает</h2>
-          <p class="hint">Выбери AI-провайдера для каждой задачи отдельно.</p>
+          <h2 data-i18n="section_routing_title">🎯 Who does what</h2>
+          <p class="hint" data-i18n="section_routing_hint">Pick an AI provider per task.</p>
           <label>
-            <span>Перевод твитов</span>
+            <span data-i18n="label_task_translate">Translate tweets</span>
             <select id="translateAiProvider">
-              <option value="gemini">Gemini (бесплатно)</option>
+              <option value="gemini" data-i18n="provider_gemini_free">Gemini (free)</option>
               <option value="openai">OpenAI</option>
               <option value="grok">Grok</option>
             </select>
           </label>
           <label>
-            <span>Объяснение твита</span>
+            <span data-i18n="label_task_explain">Explain tweet</span>
             <select id="explainProvider">
               <option value="openai">OpenAI</option>
               <option value="grok">Grok</option>
@@ -448,7 +448,7 @@
             </select>
           </label>
           <label>
-            <span>AI-ответы</span>
+            <span data-i18n="label_task_reply">AI replies</span>
             <select id="replyProvider">
               <option value="openai">OpenAI</option>
               <option value="grok">Grok</option>
@@ -457,71 +457,71 @@
           </label>
         </section>
 
-        <!-- 2. Мои персоны + аккаунты -->
+        <!-- 2. Personas + per-account rules -->
         <section>
-          <h2>👥 Мои персоны</h2>
+          <h2 data-i18n="section_personas_title">👥 My personas</h2>
           <div id="customPersonasList"></div>
           <details id="customPersonaForm">
-            <summary>+ Создать свою персону</summary>
-            <label><span>Название</span><input type="text" id="cpLabel" placeholder="Мой стиль" maxlength="40"/></label>
-            <label><span>Описание стиля</span><textarea id="cpPrompt" rows="4" placeholder="Пиши как…"></textarea></label>
-            <button id="cpAdd" class="btn primary">Добавить</button>
+            <summary data-i18n="btn_create_persona">+ Create a persona</summary>
+            <label><span data-i18n="label_name">Name</span><input type="text" id="cpLabel" data-i18n-placeholder="ph_persona_name" placeholder="My style" maxlength="40"/></label>
+            <label><span data-i18n="label_style_prompt">Style description</span><textarea id="cpPrompt" rows="4" data-i18n-placeholder="ph_persona_prompt" placeholder="Write like…"></textarea></label>
+            <button id="cpAdd" class="btn primary" data-i18n="btn_add">Add</button>
           </details>
           <hr style="border:none;border-top:1px solid var(--border);margin:12px 0;"/>
-          <p class="hint">Разные аккаунты X — разные персоны. Если правило не задано, используется выбранная персона по умолчанию.</p>
+          <p class="hint" data-i18n="section_account_rules_hint">Different X accounts can use different personas. If no rule matches, the default persona is used.</p>
           <div id="accountPrefsList"></div>
           <details>
-            <summary>+ Добавить правило для аккаунта</summary>
-            <label><span>Handle (с @)</span><input type="text" id="apHandle" placeholder="@yourhandle" maxlength="20"/></label>
-            <label><span>Персона</span><select id="apPersona"></select></label>
-            <button id="apAdd" class="btn primary">Добавить</button>
+            <summary data-i18n="btn_add_account_rule">+ Add a per-account rule</summary>
+            <label><span data-i18n="label_handle">Handle (with @)</span><input type="text" id="apHandle" data-i18n-placeholder="ph_handle" placeholder="@yourhandle" maxlength="20"/></label>
+            <label><span data-i18n="label_persona">Persona</span><select id="apPersona"></select></label>
+            <button id="apAdd" class="btn primary" data-i18n="btn_add">Add</button>
           </details>
         </section>
 
-        <!-- 3. Лимит расходов -->
+        <!-- 3. Spending limit -->
         <section>
-          <h2>💰 Лимит расходов</h2>
+          <h2 data-i18n="section_budget_title">💰 Spending limit</h2>
           <label>
-            <span>Токенов в день <span class="hint" style="display:inline;">(0 = без лимита)</span></span>
+            <span><span data-i18n="label_daily_tokens">Tokens per day</span> <span class="hint" style="display:inline;" data-i18n="budget_unlimited_hint">(0 = unlimited)</span></span>
             <input type="number" id="dailyTokenBudget" min="0" step="1000" placeholder="0"/>
           </label>
           <div id="usagePanel" class="hint" style="margin-top:6px;">—</div>
-          <button id="usageReset" class="btn" style="margin-top:8px;">↺ Сбросить счётчик</button>
+          <button id="usageReset" class="btn" style="margin-top:8px;" data-i18n="btn_reset_counter">↺ Reset counter</button>
         </section>
 
-        <!-- 4. Для разработчиков -->
+        <!-- 4. For developers -->
         <details class="adv-section" style="margin-top:0;">
-          <summary style="border-radius:8px;font-size:12px;">🛠 Для разработчиков</summary>
+          <summary style="border-radius:8px;font-size:12px;" data-i18n="section_dev_title">🛠 For developers</summary>
           <div class="adv-inner" style="border-radius:0 0 8px 8px;">
 
             <section>
-              <h2>⚡ MCP Gateway <span class="hint" style="font-size:11px;font-weight:400;">(опционально)</span></h2>
-              <p class="hint">Локальный прокси-сервер для стабильного доступа к данным X.</p>
-              <label><span>URL</span><input type="text" id="mcpUrl" placeholder="http://127.0.0.1:3847"/></label>
-              <label><span>Токен</span><input type="password" id="mcpToken" placeholder="MCP_TOKEN"/></label>
+              <h2><span data-i18n="section_mcp_title">⚡ MCP Gateway</span> <span class="hint" style="font-size:11px;font-weight:400;" data-i18n="section_optional_label">(optional)</span></h2>
+              <p class="hint" data-i18n="section_mcp_hint">Local proxy for stable access to X data.</p>
+              <label><span data-i18n="label_url">URL</span><input type="text" id="mcpUrl" placeholder="http://127.0.0.1:3847"/></label>
+              <label><span data-i18n="label_token">Token</span><input type="password" id="mcpToken" placeholder="MCP_TOKEN"/></label>
               <div class="row-btns">
-                <button id="mcpTest" class="btn">Проверить</button>
+                <button id="mcpTest" class="btn" data-i18n="btn_test">Test</button>
                 <span id="mcpStatus" class="hint" style="align-self:center;"></span>
               </div>
             </section>
 
             <section>
-              <h2>🌐 Google Translate</h2>
-              <p class="hint">Альтернатива AI-переводу — дешевле при большом объёме.</p>
-              <label><span>Использовать</span>
+              <h2 data-i18n="section_gtranslate_title">🌐 Google Translate</h2>
+              <p class="hint" data-i18n="section_gtranslate_hint">Alternative to AI translation — cheaper at scale.</p>
+              <label><span data-i18n="label_use">Use</span>
                 <select id="translationProvider">
-                  <option value="openai">OpenAI (AI, по умолчанию)</option>
-                  <option value="google">Google Translate API</option>
+                  <option value="openai" data-i18n="gtranslate_openai_default">OpenAI (AI, default)</option>
+                  <option value="google" data-i18n="gtranslate_google_api">Google Translate API</option>
                 </select>
               </label>
-              <label><span>Google API key</span>
+              <label><span data-i18n="label_google_api_key">Google API key</span>
                 <input type="password" id="googleApiKey" placeholder="AIza…"/>
               </label>
             </section>
 
             <section>
-              <h2>🩺 Диагностика</h2>
-              <button id="healthRun" class="btn primary">Запустить проверку</button>
+              <h2 data-i18n="section_diag_title">🩺 Diagnostics</h2>
+              <button id="healthRun" class="btn primary" data-i18n="btn_run_health">Run health check</button>
               <div id="healthResult"></div>
             </section>
 
@@ -532,14 +532,14 @@
     </details>
 
     <div class="buttons" style="margin-top:14px;">
-      <button id="save" class="btn success">Сохранить</button>
-      <button id="reset" class="btn">Сбросить</button>
+      <button id="save" class="btn success" data-i18n="btn_save">Save</button>
+      <button id="reset" class="btn" data-i18n="btn_reset">Reset</button>
     </div>
 
   </div><!-- /wrap -->
 
   <!-- ── Onboarding overlay ─────────────────────────────────────────────── -->
-  <div id="tta-onboarding" class="ob-overlay" style="display:none;" role="dialog" aria-modal="true" aria-label="Настройка TweAI">
+  <div id="tta-onboarding" class="ob-overlay" style="display:none;" role="dialog" aria-modal="true" data-i18n-aria-label="onboarding_aria" aria-label="TweAI setup">
     <div class="ob-card">
       <div class="ob-steps">
         <span class="ob-step active" id="ob-dot-1">1</span>
@@ -549,44 +549,44 @@
         <span class="ob-step" id="ob-dot-3">3</span>
       </div>
       <div class="ob-pane" id="ob-pane-1">
-        <h2>Выбери AI-провайдер</h2>
-        <p class="hint">Вставь ключ — он проверится автоматически.</p>
+        <h2 data-i18n="ob_provider_h">Choose your AI provider</h2>
+        <p class="hint" data-i18n="ob_provider_hint">Paste your key — we'll verify it automatically.</p>
         <div class="ob-providers">
           <label class="ob-provider-card" data-provider="openai">
             <input type="radio" name="ob-provider" value="openai"/>
             <span class="ob-provider-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.28 9.82a5.98 5.98 0 0 0-.52-4.91 6.05 6.05 0 0 0-6.51-2.9 6.07 6.07 0 0 0-4.56-2.02 6.06 6.06 0 0 0-5.78 4.2 5.98 5.98 0 0 0-4 2.9 6.05 6.05 0 0 0 .75 7.09 5.98 5.98 0 0 0 .51 4.91 6.05 6.05 0 0 0 6.51 2.9A6.06 6.06 0 0 0 13.26 24a6.06 6.06 0 0 0 5.77-4.21 5.99 5.99 0 0 0 4-2.9 6.06 6.06 0 0 0-.75-7.07zM13.26 22.5a4.49 4.49 0 0 1-2.88-1.04l.14-.08 4.78-2.76a.8.8 0 0 0 .4-.68V11.6l2.02 1.17a.07.07 0 0 1 .04.05v5.58a4.5 4.5 0 0 1-4.5 4.1zM3.6 18.37a4.47 4.47 0 0 1-.53-3.01l.14.08 4.78 2.76a.77.77 0 0 0 .78 0l5.84-3.37v2.33a.08.08 0 0 1-.03.06L9.74 19.95A4.5 4.5 0 0 1 3.6 18.37zM2.34 7.9a4.49 4.49 0 0 1 2.37-1.97V11.6a.77.77 0 0 0 .39.68l5.81 3.35-2.02 1.17a.08.08 0 0 1-.07 0L3.99 13.9A4.5 4.5 0 0 1 2.34 7.9zm16.6 3.86-5.83-3.37 2.02-1.17a.08.08 0 0 1 .07 0l4.83 2.79a4.49 4.49 0 0 1-.68 8.1v-5.68a.79.79 0 0 0-.41-.67zm2.01-3.02-.14-.09-4.77-2.78a.78.78 0 0 0-.79 0L9.41 9.23V6.9a.07.07 0 0 1 .03-.06l4.83-2.79a4.5 4.5 0 0 1 6.68 4.66zM8.31 12.86 6.29 11.7a.08.08 0 0 1-.04-.06V6.07a4.5 4.5 0 0 1 7.38-3.45l-.14.08-4.78 2.76a.79.79 0 0 0-.4.68v6.72zm1.1-2.37 2.6-1.5 2.61 1.5v2.99l-2.6 1.5-2.61-1.5V10.5z"/></svg></span>
-            <div class="ob-txt"><strong>OpenAI</strong><span class="ob-hint">GPT-4o · надёжный выбор</span></div>
+            <div class="ob-txt"><strong>OpenAI</strong><span class="ob-hint" data-i18n="ob_openai_hint">GPT-4o · solid default</span></div>
           </label>
           <label class="ob-provider-card" data-provider="grok">
             <input type="radio" name="ob-provider" value="grok"/>
             <span class="ob-provider-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></span>
-            <div class="ob-txt"><strong>Grok</strong><span class="ob-badge-xai">xAI</span><span class="ob-hint">Минимальная цензура</span></div>
+            <div class="ob-txt"><strong>Grok</strong><span class="ob-badge-xai">xAI</span><span class="ob-hint" data-i18n="ob_grok_hint">Minimal censorship</span></div>
           </label>
           <label class="ob-provider-card" data-provider="gemini">
             <input type="radio" name="ob-provider" value="gemini"/>
             <span class="ob-provider-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="fill:none"><defs><linearGradient id="gem-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#4285F4"/><stop offset="50%" stop-color="#9B72CB"/><stop offset="100%" stop-color="#EA4335"/></linearGradient></defs><path fill="url(#gem-g)" d="M12 2c0 0 1.8 6.36 5.66 8.34C15.68 12.32 12 22 12 22c0 0-1.8-6.36-5.66-8.34C8.32 11.68 12 2 12 2z"/><path fill="url(#gem-g)" d="M12 2c0 0 6.36 1.8 8.34 5.66C18.32 9.68 22 12 22 12c0 0-6.36 1.8-8.34 5.66C11.68 15.68 2 12 2 12c0 0 6.36-1.8 8.34-5.66C12.32 8.32 12 2 12 2z" opacity=".7"/></svg></span>
-            <div class="ob-txt"><strong>Gemini</strong><span class="ob-badge-free">FREE</span><span class="ob-hint">1M токенов/день бесплатно</span></div>
+            <div class="ob-txt"><strong>Gemini</strong><span class="ob-badge-free">FREE</span><span class="ob-hint" data-i18n="ob_gemini_hint">1M free tokens/day</span></div>
           </label>
         </div>
         <div class="ob-key-row" id="ob-key-row" style="display:none;">
           <label>
-            <span id="ob-key-label">API key <a id="ob-get-key" href="#" target="_blank" class="get-key-link">Get key →</a></span>
-            <input type="password" id="ob-apiKey" placeholder="Вставь ключ…" autocomplete="off"/>
+            <span id="ob-key-label"><span data-i18n="label_api_key">API key</span> <a id="ob-get-key" href="#" target="_blank" class="get-key-link" data-i18n="link_get_key">Get key →</a></span>
+            <input type="password" id="ob-apiKey" data-i18n-placeholder="ph_ob_key" placeholder="Paste key…" autocomplete="off"/>
           </label>
           <span id="ob-key-status" class="hint key-status"></span>
         </div>
         <div class="ob-footer">
-          <button class="btn" id="ob-skip">Пропустить всё</button>
-          <button class="btn primary" id="ob-next-1" disabled>Далее →</button>
+          <button class="btn" id="ob-skip" data-i18n="btn_skip_all">Skip everything</button>
+          <button class="btn primary" id="ob-next-1" disabled data-i18n="btn_next">Next →</button>
         </div>
       </div>
       <div class="ob-pane" id="ob-pane-2" style="display:none;">
-        <h2>Язык перевода</h2>
-        <p class="hint">На какой язык переводить твиты по умолчанию?</p>
+        <h2 data-i18n="ob_lang_h">Translation language</h2>
+        <p class="hint" data-i18n="ob_lang_hint">Which language should tweets be translated to by default?</p>
         <label>
-          <span>Целевой язык</span>
+          <span data-i18n="label_target_lang">Target language</span>
           <select id="ob-lang">
-            <option value="auto">Как в браузере (авто)</option>
+            <option value="auto" data-i18n="lang_auto">Browser language (auto)</option>
             <option value="en">English</option><option value="zh">中文</option>
             <option value="es">Español</option><option value="hi">हिन्दी</option>
             <option value="ar">العربية</option><option value="ru">Русский</option>
@@ -600,16 +600,16 @@
           </select>
         </label>
         <div class="ob-footer">
-          <button class="btn" id="ob-back-2">← Назад</button>
-          <button class="btn primary" id="ob-next-2">Далее →</button>
+          <button class="btn" id="ob-back-2" data-i18n="btn_back">← Back</button>
+          <button class="btn primary" id="ob-next-2" data-i18n="btn_next">Next →</button>
         </div>
       </div>
       <div class="ob-pane" id="ob-pane-3" style="display:none;">
         <div class="ob-done-icon">🎉</div>
-        <h2 style="text-align:center;">Готово!</h2>
+        <h2 style="text-align:center;" data-i18n="ob_done_h">All set!</h2>
         <p id="ob-summary" class="hint ob-summary" style="text-align:center;"></p>
         <div class="ob-footer centered">
-          <button class="btn primary" id="ob-finish">Открыть настройки</button>
+          <button class="btn primary" id="ob-finish" data-i18n="btn_open_settings">Open settings</button>
         </div>
       </div>
     </div>

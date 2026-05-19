@@ -6,9 +6,9 @@
 const TTA_IS_TOP_FRAME = (() => { try { return window.self === window.top; } catch { return false; } })();
 
 const STYLES = [
-  ['formal', 'формально'],
-  ['casual', 'неформально'],
-  ['flirt', 'флирт']
+  ['formal', 'formal'],
+  ['casual', 'casual'],
+  ['flirt', 'flirt']
 ];
 const LANGS = [
   ['auto', 'Auto'], ['ru', 'Русский'], ['en', 'English'], ['th', 'ไทย'],
@@ -20,6 +20,12 @@ const EMOJIS = '😀 😃 😄 😁 😆 😅 😂 😊 😇 🙂 🙃 😉 😌
 const qs = (sel, root = document) => root.querySelector(sel);
 const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 const once = (el, key) => { if (!el || el[key]) return false; el[key] = true; return true; };
+
+// chrome.i18n с graceful fallback. content-script может выполняться до полной
+// инициализации API, поэтому ловим исключения и возвращаем пустую строку.
+const tta_i18n = (key) => {
+  try { return chrome?.i18n?.getMessage(key) || ''; } catch { return ''; }
+};
 
 async function getPrefs() {
   try {
@@ -347,7 +353,7 @@ function buildComposerLine() {
   const emojiBtn = document.createElement('button');
   emojiBtn.type = 'button';
   emojiBtn.className = 'tta-emoji-btn';
-  emojiBtn.title = 'Эмодзи';
+  emojiBtn.title = tta_i18n('cs_emoji_title') || 'Emoji';
   emojiBtn.textContent = '😊';
 
   const emojiPanel = document.createElement('div');
@@ -357,12 +363,12 @@ function buildComposerLine() {
   const composeBtn = document.createElement('button');
   composeBtn.type = 'button';
   composeBtn.className = 'tta-compose-btn';
-  composeBtn.title = 'Написать промт';
+  composeBtn.title = tta_i18n('cs_compose_title') || 'Write a prompt';
   composeBtn.textContent = '✍️';
 
   const input = document.createElement('textarea');
   input.className = 'tta-compose-input';
-  input.placeholder = 'Ваш промт к посту...';
+  input.placeholder = tta_i18n('cs_compose_ph_post') || 'Your prompt for this post…';
 
   composeBtn.addEventListener('click', () => {
     input.classList.toggle('show');
@@ -416,12 +422,12 @@ function buildComposerLine() {
       context,
     };
     if (!freshPayload.text) return;
-    input.value = 'Отправка…';
+    input.value = tta_i18n('cs_compose_sending') || 'Sending…';
     try {
       const r = await chrome.runtime.sendMessage({ type: 'TTA_GENERATE_REPLY', payload });
-      input.value = r?.ok && r.text ? r.text : 'Ошибка генерации';
+      input.value = r?.ok && r.text ? r.text : (tta_i18n('cs_compose_error') || 'Generation failed');
     } catch {
-      input.value = 'Ошибка генерации';
+      input.value = tta_i18n('cs_compose_error') || 'Generation failed';
     }
   });
 
@@ -627,7 +633,7 @@ function attachToDmComposer(area) {
 
   if (!parent.querySelector('.tta-compose-line')) {
     const line = buildComposerLine();
-    line.querySelector('.tta-compose-input').placeholder = 'Ваш промт к сообщению...';
+    line.querySelector('.tta-compose-input').placeholder = tta_i18n('cs_compose_ph_dm') || 'Your prompt for this DM…';
     parent.insertBefore(line, area);
   }
   if (!parent.querySelector('.tta-dm-reply')) {
@@ -665,10 +671,16 @@ function wireSettings(root) {
 }
 
 // === DOM cleanup (X-injected labels) ===
+// X иногда инжектит локализованные плейсхолдеры рядом с твитом ("Перевести пост" в ru-UI,
+// "Translate post" в en-UI). Список расширяемый — добавлять локалью по мере обнаружения.
+const X_LEGACY_TRANSLATE_LABELS = new Set([
+  'Перевести пост',
+  'Translate post',
+]);
 function cleanupXLabels(root) {
-  // Remove "Перевести пост" stub spans
   for (const el of root.querySelectorAll('span')) {
-    if (el.textContent?.trim() === 'Перевести пост') el.remove();
+    const t = el.textContent?.trim();
+    if (t && X_LEGACY_TRANSLATE_LABELS.has(t)) el.remove();
   }
 }
 
