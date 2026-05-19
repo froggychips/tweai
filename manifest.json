@@ -49,6 +49,7 @@
       ],
       "js": [
         "dev-logger.js",
+        "selectors.js",
         "content_script.js"
       ],
       "css": [
