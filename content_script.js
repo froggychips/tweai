@@ -39,14 +39,13 @@ async function getPrefs() {
 // Detect the currently active X account handle for per-account persona override.
 // X exposes the active handle on the side-nav account switcher.
 function detectActiveHandle() {
-  const switcher = qs('[data-testid="SideNav_AccountSwitcher_Button"]');
+  const switcher = TTASelectors.findAccountSwitcher();
   if (switcher) {
     const handleSpan = qsa('span', switcher).find(s => /^@/.test(s.textContent || ''));
     if (handleSpan) return handleSpan.textContent.trim().toLowerCase();
   }
-  // Fallback: profile link in side nav
-  const profileLink = qs('[data-testid="AppTabBar_Profile_Link"]')
-    || qs('a[href^="/"][aria-label*="rofile"]');
+  // Fallback: profile link in side nav (handle через URL)
+  const profileLink = TTASelectors.findProfileLink();
   if (profileLink) {
     const href = profileLink.getAttribute('href') || '';
     const m = href.match(/^\/([A-Za-z0-9_]{1,15})$/);
@@ -90,12 +89,11 @@ function fillPersonaSelect(select, personas, defaultId) {
 }
 
 function getTweetText(article) {
-  const nodes = qsa('[data-testid="tweetText"], div[dir="auto"][lang], span[dir="auto"][lang]', article);
-  return nodes.length ? nodes.map(n => n.innerText.trim()).join('\n').trim() : '';
+  return TTASelectors.findTweetText(article);
 }
 
 function getAuthorId(article) {
-  const a = qs('[data-testid="User-Name"] a[href*="/"]', article);
+  const a = TTASelectors.findAuthorLink(article);
   return a?.getAttribute('href')?.split('?')[0] || null;
 }
 
@@ -124,9 +122,13 @@ function extractTweetPayload(article) {
     || qs('div[role="link"][tabindex="0"]', article);
   const quotedText = quotedContainer ? getTweetText(quotedContainer) : null;
 
-  // Own text = tweetText nodes NOT inside the quoted container
+  // Own text = tweetText nodes NOT inside the quoted container.
+  // Используем те же стратегии что и findTweetText, но руками — нам нужно
+  // отфильтровать nodes принадлежащие quoted блоку.
   let ownText = '';
-  for (const el of qsa('[data-testid="tweetText"]', article)) {
+  let textNodes = qsa('[data-testid="tweetText"]', article);
+  if (!textNodes.length) textNodes = qsa('div[dir="auto"][lang], span[dir="auto"][lang]', article);
+  for (const el of textNodes) {
     if (quotedContainer && quotedContainer.contains(el)) continue;
     ownText += (ownText ? '\n' : '') + el.innerText.trim();
   }
@@ -491,9 +493,7 @@ function ttaInsertText(box, text) {
 
 function insertIntoComposer(text, anchor) {
   const root = anchor?.closest?.('article') || document;
-  const box = root.querySelector('[data-testid="tweetTextarea_0"] div[role="textbox"]')
-    || root.querySelector('div[role="textbox"]')
-    || document.querySelector('[data-testid="tweetTextarea_0"] div[role="textbox"], div[role="textbox"], textarea');
+  const box = TTASelectors.findComposeBox(root) || TTASelectors.findComposeBox(document);
   if (!box) return false;
   return ttaInsertText(box, text);
 }
@@ -527,7 +527,7 @@ async function attachToTweet(article) {
 
   const block = buildBlock(auto);
   applyPrefsToBlock(block, prefs || {});
-  const anchor = qs('[data-testid="tweetText"], div[dir="auto"][lang], span[dir="auto"][lang]', article) || article;
+  const anchor = TTASelectors.findTweetAnchor(article);
   anchor.insertAdjacentElement('afterend', block);
 
   const submenu = block.querySelector('.tta-submenu');
@@ -693,7 +693,7 @@ function scheduleScan() {
 
 function scan() {
   for (const a of qsa('article')) attachToTweet(a);
-  for (const dm of qsa('[data-testid="dmComposerTextInput"]')) attachToDmComposer(dm);
+  for (const dm of TTASelectors.findDmComposers(document)) attachToDmComposer(dm);
   wireSettings(document);
   cleanupXLabels(document);
 }
