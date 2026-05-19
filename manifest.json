@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "TweAI",
-  "version": "1.8",
+  "version": "1.8.1",
   "description": "AI Reply Assistant for X / Twitter — drafts replies in your voice with personas, translates tweets, and explains posts. BYOK, no subscription.",
   "permissions": [
     "storage",
