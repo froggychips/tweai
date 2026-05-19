@@ -1,0 +1,8 @@
+node_modules
+dist
+*.zip
+docs
+tweai-mcp-server
+_locales
+LICENSE
+.git
