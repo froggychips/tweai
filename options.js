@@ -2,6 +2,40 @@ const chromeApi = typeof chrome !== 'undefined' ? chrome : undefined;
 const runtimeApi = chromeApi?.runtime;
 const storageSync = chromeApi?.storage?.sync;
 
+// chrome.i18n.getMessage с fallback на ключ — в options.html все строки имеют
+// англоязычный текст по умолчанию, так что отсутствие перевода не страшно.
+const i18n = (key, substitutions) => {
+  try {
+    const m = chromeApi?.i18n?.getMessage(key, substitutions);
+    if (m) return m;
+  } catch {}
+  return '';
+};
+
+// Прогон по [data-i18n*] атрибутам: подставляет локализованные строки в textContent,
+// placeholder, title или aria-label. Вызывается один раз на DOMContentLoaded.
+function applyI18n(root = document) {
+  const map = [
+    ['data-i18n',             (el, v) => { el.textContent = v; }],
+    ['data-i18n-html',        (el, v) => { el.innerHTML = v; }],
+    ['data-i18n-placeholder', (el, v) => { el.setAttribute('placeholder', v); }],
+    ['data-i18n-title',       (el, v) => { el.setAttribute('title', v); }],
+    ['data-i18n-aria-label',  (el, v) => { el.setAttribute('aria-label', v); }],
+  ];
+  for (const [attr, apply] of map) {
+    for (const el of root.querySelectorAll(`[${attr}]`)) {
+      const v = i18n(el.getAttribute(attr));
+      if (v) apply(el, v);
+    }
+  }
+  // <html lang="…"> — выставляем по UI-локали браузера, чтобы CSS :lang и
+  // screen reader корректно распознавали направление и язык страницы.
+  try {
+    const ui = chromeApi?.i18n?.getUILanguage();
+    if (ui) document.documentElement.lang = ui;
+  } catch {}
+}
+
 const memoryStore = {};
 
 const storageGet = defaults => storageSync
@@ -57,16 +91,19 @@ const baseDefaults = {
 
 const $ = id => document.getElementById(id);
 
+// Базовые описания персон — на английском как default-locale fallback.
+// Локализованные label/hint берутся через chrome.i18n.getMessage('persona_<id>_label' / '_hint'),
+// см. ru/messages.json и en/messages.json.
 const BUILTIN_PERSONAS = [
-  { id: 'default',       label: 'По умолчанию',    hint: 'Нейтральный и взвешенный. Без ярко выраженного характера.',                           builtin: true },
-  { id: 'tech_founder',  label: 'Фаундер',          hint: 'Стартап-голос: конкретные цифры, оптимизм, без buzzwords.',                           builtin: true },
-  { id: 'engineer',      label: 'Инженер',           hint: 'Точность и лёгкий скептицизм. Замечает подводные камни, требует доказательств.',     builtin: true },
-  { id: 'ai_researcher', label: 'AI-исследователь', hint: 'Нюансы и осторожность. Отделяет факты от спекуляций, без хайпа.',                    builtin: true },
-  { id: 'casual_tech',   label: 'Свой парень',       hint: 'Тепло и по-человечески. Как сообщение хорошему знакомому.',                          builtin: true },
-  { id: 'skeptic',       label: 'Скептик',           hint: 'Ставит всё под сомнение. Ищет слабое место в аргументе. Коротко и прямо.',           builtin: true },
-  { id: 'diplomat',      label: 'Дипломат',          hint: 'Находит точки соприкосновения. Смягчает конфликт, показывает разные стороны.',       builtin: true },
-  { id: 'flirt',         label: 'Флирт',             hint: 'Игривый и обаятельный, с намёками и юморком. Строго SFW.',                           builtin: true },
-  { id: 'troll',         label: 'Тролль 🔥',         hint: 'Хаос ради лулзов. Провоцирует, передёргивает, нагнетает. Для срачей.\n⚡ Рекомендуется Grok — меньше самоцензуры.',  builtin: true },
+  { id: 'default',       label: 'Default',           hint: 'Neutral and balanced. No pronounced voice.',                                                                                        builtin: true },
+  { id: 'tech_founder',  label: 'Founder',           hint: 'Startup voice: concrete numbers, optimism, no buzzwords.',                                                                          builtin: true },
+  { id: 'engineer',      label: 'Engineer',          hint: 'Precision with mild skepticism. Spots edge cases, asks for evidence.',                                                              builtin: true },
+  { id: 'ai_researcher', label: 'AI Researcher',     hint: 'Nuanced and cautious. Separates facts from speculation, no hype.',                                                                  builtin: true },
+  { id: 'casual_tech',   label: 'Friendly',          hint: 'Warm and human. Like writing to a friend.',                                                                                         builtin: true },
+  { id: 'skeptic',       label: 'Skeptic',           hint: 'Questions everything. Finds the weak point. Short and direct.',                                                                     builtin: true },
+  { id: 'diplomat',      label: 'Diplomat',          hint: 'Finds common ground. Softens conflict, shows both sides.',                                                                          builtin: true },
+  { id: 'flirt',         label: 'Flirt',             hint: 'Playful and charming, with light innuendo and humor. Strictly SFW.',                                                                builtin: true },
+  { id: 'troll',         label: 'Troll 🔥',          hint: 'Chaos for the lulz. Provokes, twists, escalates. For flame wars.\n⚡ Recommended with Grok — less self-censorship.',                  builtin: true },
 ];
 
 async function loadPersonas() {
@@ -493,10 +530,10 @@ async function updateProviderDisplay() {
   const sub = $('card-provider-sub');
   if (!sub) return;
   if (hasKey) {
-    sub.textContent = `✓ ${nameMap[active]} подключён`;
+    sub.textContent = (i18n('card_provider_sub_connected', [nameMap[active]]) || `✓ ${nameMap[active]} connected`);
     sub.className = 'feat-card-sub ok';
   } else {
-    sub.textContent = 'Ключ не введён';
+    sub.textContent = i18n('card_provider_sub_no_key') || 'No API key';
     sub.className = 'feat-card-sub bad';
   }
 }
@@ -571,6 +608,7 @@ async function forceRefreshAds() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  applyI18n();
   load();
   $('save').addEventListener('click', save);
   $('reset').addEventListener('click', reset);
@@ -583,7 +621,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const edit = $('provider-edit');
     const isOpen = edit.style.display !== 'none';
     edit.style.display = isOpen ? 'none' : '';
-    $('provider-toggle-btn').textContent = isOpen ? 'Настроить' : 'Готово';
+    $('provider-toggle-btn').textContent = isOpen
+      ? (i18n('btn_configure') || 'Configure')
+      : (i18n('btn_done') || 'Done');
     if (isOpen) updateProviderDisplay();
   });
 
@@ -732,7 +772,9 @@ async function initOnboarding() {
       await storageSet({ [storKey]: val });
       const r = await sendMessage({ type: 'TTA_TEST_KEY', provider: selectedProvider });
       keyOk = Boolean(r?.ok);
-      status.textContent = keyOk ? '✅ Ключ работает' : '❌ ' + (r?.error || 'Неверный ключ');
+      status.textContent = keyOk
+        ? ('✅ ' + (i18n('msg_key_ok') || 'Key looks good'))
+        : ('❌ ' + (r?.error || i18n('msg_key_bad') || 'Key check failed'));
       status.style.color = keyOk ? 'var(--ok)' : 'var(--bad)';
       $('ob-next-1').disabled = !val;
     }, 700);
@@ -754,9 +796,10 @@ async function initOnboarding() {
 
     const providerLabel = { openai: 'OpenAI', grok: 'Grok (xAI)', gemini: 'Google Gemini' }[selectedProvider] || selectedProvider;
     const langLabel = $('ob-lang').options[$('ob-lang').selectedIndex]?.text || lang;
-    $('ob-summary').textContent =
-      `Провайдер: ${providerLabel}. Язык перевода: ${langLabel}. ` +
-      `Все три фичи (перевод, объяснение, ответы) направлены на выбранный провайдер.`;
+    $('ob-summary').textContent = (
+      i18n('ob_summary', [providerLabel, langLabel])
+      || `Provider: ${providerLabel}. Translate to: ${langLabel}. All three features (translate, explain, reply) go to this provider.`
+    );
 
     if (selectedProvider) {
       await storageSet({
