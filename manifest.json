@@ -17,10 +17,12 @@
     "https://*.x.com/*",
     "https://twitter.com/*",
     "https://*.twitter.com/*",
-    "http://127.0.0.1/*",
-    "http://localhost/*",
     "https://api.x.ai/*",
     "https://generativelanguage.googleapis.com/*"
+  ],
+  "optional_host_permissions": [
+    "http://127.0.0.1/*",
+    "http://localhost/*"
   ],
   "options_page": "options.html",
   "background": {

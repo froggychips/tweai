@@ -1,4 +1,10 @@
 // === TweAI content script ===
+
+// Манифест поднимает скрипт во всех iframe (all_frames + match_about_blank) ради
+// поддержки nested-фреймов X, но реальная разметка таймлайна живёт только в top-frame.
+// В nested-фреймах исполнение скрипта только удваивает MutationObserver и засоряет логи.
+const TTA_IS_TOP_FRAME = (() => { try { return window.self === window.top; } catch { return false; } })();
+
 const STYLES = [
   ['formal', 'формально'],
   ['casual', 'неформально'],
@@ -446,21 +452,44 @@ async function runTranslate(block, text, target) {
   }
 }
 
+// Вставка текста в composer X.
+// Стратегия: 1) InputEvent path (дружелюбен к React/ProseMirror и не помечен deprecated);
+//            2) execCommand('insertText') как fallback (X пока на нём держится);
+//            3) прямое присваивание value/textContent для textarea / простых полей.
+// Возвращает true, если хоть один путь сработал.
+function ttaInsertText(box, text) {
+  if (!box || typeof text !== 'string') return false;
+  try { box.focus(); } catch {}
+  // 1. Modern InputEvent — Chrome не отдаст реальный insert на contenteditable,
+  // но сам факт диспатча сообщит React'у о намерении и поднимет 'beforeinput'.
+  try {
+    const ev = new InputEvent('beforeinput', {
+      inputType: 'insertText', data: text, bubbles: true, cancelable: true,
+    });
+    box.dispatchEvent(ev);
+  } catch {}
+  // 2. Legacy execCommand (deprecated, но в Chrome работает на contenteditable до сих пор).
+  let inserted = false;
+  try { inserted = document.execCommand('insertText', false, text); } catch {}
+  // 3. Direct assignment fallback — textarea/<input>.
+  if (!inserted) {
+    try {
+      if ('value' in box && typeof box.value === 'string') box.value += text;
+      else box.textContent = (box.textContent || '') + text;
+      inserted = true;
+    } catch {}
+  }
+  try { box.dispatchEvent(new InputEvent('input', { bubbles: true })); } catch {}
+  return inserted;
+}
+
 function insertIntoComposer(text, anchor) {
   const root = anchor?.closest?.('article') || document;
   const box = root.querySelector('[data-testid="tweetTextarea_0"] div[role="textbox"]')
     || root.querySelector('div[role="textbox"]')
     || document.querySelector('[data-testid="tweetTextarea_0"] div[role="textbox"], div[role="textbox"], textarea');
   if (!box) return false;
-  try {
-    box.focus();
-    document.execCommand('insertText', false, text);
-    box.dispatchEvent(new InputEvent('input', { bubbles: true }));
-    return true;
-  } catch {
-    try { box.textContent = text; return true; } catch {}
-  }
-  return false;
+  return ttaInsertText(box, text);
 }
 
 function quickInsert(article, text, tries = 8, delay = 120) {
@@ -469,13 +498,7 @@ function quickInsert(article, text, tries = 8, delay = 120) {
     const box = (article.querySelector('div[role="textbox"], textarea'))
       || document.querySelector('div[role="textbox"], textarea');
     if (box) {
-      try {
-        box.focus();
-        document.execCommand('insertText', false, text);
-        box.dispatchEvent(new InputEvent('input', { bubbles: true }));
-      } catch {
-        try { box.textContent = text; } catch {}
-      }
+      ttaInsertText(box, text);
       return;
     }
     if (++n < tries) setTimeout(tick, delay);
@@ -617,13 +640,7 @@ function attachToDmComposer(area) {
       const custom = parent.querySelector('.tta-compose-input');
       const txt = (custom?.value || '').trim();
       if (!txt) return;
-      try {
-        area.focus();
-        document.execCommand('insertText', false, txt);
-        area.dispatchEvent(new InputEvent('input', { bubbles: true }));
-      } catch {
-        try { area.textContent = txt; } catch {}
-      }
+      ttaInsertText(area, txt);
     });
     parent.appendChild(b);
   }
@@ -681,5 +698,7 @@ function boot() {
   }
 }
 
-if (document.body) boot();
-else document.addEventListener('DOMContentLoaded', boot, { once: true });
+if (TTA_IS_TOP_FRAME) {
+  if (document.body) boot();
+  else document.addEventListener('DOMContentLoaded', boot, { once: true });
+}

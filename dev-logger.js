@@ -71,13 +71,15 @@
     window.TTALogger = api;
 
     (function init() {
+        // Источники включения логгера:
+        //  - isDevBuild — нет update_url, расширение загружено unpacked,
+        //  - chrome.storage.local.ttaDebugLogs — пользовательский toggle на странице настроек.
+        // URL/localStorage-флаги намеренно убраны: они подделываются страницей x.com
+        // и могли быть включены вредоносной ссылкой ?tta_debug=1.
         try {
-            const url = new URL(location.href);
-            const urlFlag = url.searchParams.get('tta_debug') === '1' || url.hash.includes('tta_debug');
-            const lsFlag = (() => { try { return localStorage.getItem('tta_debug') === '1'; } catch (_) { return false; } })();
             chrome.storage?.local?.get({ ttaDebugLogs: false, ttaDebugLogsUntil: 0 }).then(({ ttaDebugLogs, ttaDebugLogsUntil }) => {
                 const until = Number(ttaDebugLogsUntil) || 0;
-                const shouldEnable = Boolean(ttaDebugLogs) || until > Date.now() || isDevBuild || urlFlag || lsFlag;
+                const shouldEnable = Boolean(ttaDebugLogs) || until > Date.now() || isDevBuild;
                 if (shouldEnable) api.enable();
                 api.log('dev-logger ready', { enabled: shouldEnable });
             }).catch(() => { if (isDevBuild) { api.enable(); api.log('dev-logger ready (fallback)'); } });

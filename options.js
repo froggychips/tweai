@@ -78,10 +78,18 @@ function updatePersonaHint(personaId) {
   const el = $('persona-hint');
   if (!el) return;
   const found = BUILTIN_PERSONAS.find(p => p.id === personaId);
-  if (!found?.hint) { el.innerHTML = ''; return; }
+  el.replaceChildren();
+  if (!found?.hint) return;
   const [main, note] = found.hint.split('\n');
-  el.innerHTML = main
-    + (note ? `<br><span style="color:#a78bfa;font-weight:500;">${note}</span>` : '');
+  el.append(document.createTextNode(main));
+  if (note) {
+    el.append(document.createElement('br'));
+    const span = document.createElement('span');
+    span.style.color = '#a78bfa';
+    span.style.fontWeight = '500';
+    span.textContent = note;
+    el.append(span);
+  }
 }
 
 let currentState = null;
