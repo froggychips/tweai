@@ -213,10 +213,15 @@ async function callGemini(model, messages, temperature) {
   };
   if (systemParts.length) body.systemInstruction = { parts: systemParts };
 
-  const url = `${GEMINI_BASE}/${model}:generateContent?key=${encodeURIComponent(geminiApiKey)}`;
+  // API-ключ передаём заголовком, не query-параметром: query-форма попадает
+  // в performance-логи браузера и потенциально в логи промежуточных прокси.
+  const url = `${GEMINI_BASE}/${model}:generateContent`;
   const r = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'x-goog-api-key': geminiApiKey,
+    },
     body: JSON.stringify(body),
   });
   if (!r.ok) throw new Error('Gemini HTTP ' + r.status + ' ' + await r.text());
@@ -514,7 +519,22 @@ const handlers = {
   TTA_OPEN_SETTINGS: async () => { await chrome.runtime.openOptionsPage(); return { ok: true }; },
 };
 
-chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+// Origin allowlist: расширение должно отвечать только на сообщения от content-script'ов
+// и из собственных страниц (options/popup). Без проверки любой iframe в x.com мог бы
+// дёргать TTA_* и тратить чужой токен-бюджет.
+const ALLOWED_SENDER_ORIGINS = /^https:\/\/([a-z0-9-]+\.)*(x|twitter)\.com\//i;
+function isAllowedSender(sender) {
+  // Сообщения из расширения (options/popup) приходят с sender.id === own extension id и без sender.tab.
+  if (sender?.id && sender.id === chrome.runtime.id && !sender.tab) return true;
+  const url = sender?.tab?.url || sender?.url || '';
+  return ALLOWED_SENDER_ORIGINS.test(url);
+}
+
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (!isAllowedSender(sender)) {
+    sendResponse({ ok: false, error: 'sender_not_allowed' });
+    return false;
+  }
   const handler = handlers[msg?.type];
   if (!handler) return false;
   handler(msg).then(sendResponse).catch(e => sendResponse({ ok: false, error: String(e) }));
