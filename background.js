@@ -162,82 +162,118 @@ async function checkBudget() {
 
 const isReasoningModel = m => /^o[0-9]/i.test(m) || /^gpt-5/i.test(m);
 
-// — OpenAI (and Grok, same wire format) —
-
-async function postOpenAICompat(chatUrl, apiKey, model, messages, temperature) {
-  const payload = { model, messages };
-  if (!isReasoningModel(model) && typeof temperature === 'number') payload.temperature = temperature;
-  const r = await fetch(chatUrl, {
-    method: 'POST',
-    headers: { Authorization: 'Bearer ' + apiKey, 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
-  if (!r.ok) throw new Error('HTTP ' + r.status + ' ' + await r.text());
-  return r.json();
+// Унифицированный fetch для AI-провайдеров: timeout через AbortController +
+// retry с экспоненциальным backoff на 429 / 5xx. Все три провайдера ходят
+// через эту обёртку — раньше каждый имел свой голый fetch без retry/timeout.
+async function aiFetch(url, headers, body, { retries = 2, timeoutMs = 30000, label = 'AI' } = {}) {
+  let lastErr;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+    try {
+      const r = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(body),
+        signal: ctrl.signal,
+      });
+      if (r.ok) return r.json();
+      // 429 (rate limit) и 5xx — ретраим; всё остальное — сразу throw.
+      const retriable = r.status === 429 || (r.status >= 500 && r.status < 600);
+      const txt = await r.text().catch(() => '');
+      lastErr = new Error(`${label} HTTP ${r.status} ${txt}`);
+      if (!retriable || attempt === retries) throw lastErr;
+    } catch (e) {
+      // AbortError (timeout) тоже ретраим как сетевую ошибку.
+      lastErr = e;
+      if (attempt === retries) throw lastErr;
+    } finally {
+      clearTimeout(timer);
+    }
+    // Backoff: 400ms, 1600ms (jitter ±25%).
+    const base = 400 * Math.pow(4, attempt);
+    const jitter = base * (0.75 + Math.random() * 0.5);
+    await new Promise(r => setTimeout(r, jitter));
+  }
+  throw lastErr;
 }
 
-async function callOpenAI(model, messages, temperature) {
-  await checkBudget();
-  const { apiKey } = await getPrefs();
-  if (!apiKey) throw new Error('Missing OpenAI API key');
-  const j = await postOpenAICompat(OPENAI_URL, apiKey, model, messages, temperature);
-  await addUsage(j.usage);
-  return (j.choices?.[0]?.message?.content || '').trim();
-}
-
-async function callGrok(model, messages, temperature) {
-  await checkBudget();
-  const { grokApiKey } = await getPrefs();
-  if (!grokApiKey) throw new Error('Missing Grok API key');
-  const j = await postOpenAICompat(GROK_URL, grokApiKey, model, messages, temperature);
-  await addUsage(j.usage);
-  return (j.choices?.[0]?.message?.content || '').trim();
-}
-
-// — Google Gemini —
-
-async function callGemini(model, messages, temperature) {
-  const { geminiApiKey } = await getPrefs();
-  if (!geminiApiKey) throw new Error('Missing Gemini API key');
-
-  // Split system vs conversation messages
-  const systemParts = messages.filter(m => m.role === 'system').map(m => ({ text: m.content }));
-  const convoMsgs   = messages.filter(m => m.role !== 'system');
-
-  const body = {
-    contents: convoMsgs.map(m => ({
-      role: m.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: m.content }],
-    })),
-    generationConfig: typeof temperature === 'number' ? { temperature } : {},
-  };
-  if (systemParts.length) body.systemInstruction = { parts: systemParts };
-
-  // API-ключ передаём заголовком, не query-параметром: query-форма попадает
-  // в performance-логи браузера и потенциально в логи промежуточных прокси.
-  const url = `${GEMINI_BASE}/${model}:generateContent`;
-  const r = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-goog-api-key': geminiApiKey,
+// OpenAI и Grok используют один и тот же wire-format (chat-completions),
+// gemini — свой. Конфиг провайдеров изолирует различия.
+const PROVIDERS = {
+  openai: {
+    keyField: 'apiKey',
+    label: 'OpenAI',
+    buildRequest: (apiKey, model, messages, temperature) => ({
+      url: OPENAI_URL,
+      headers: { Authorization: 'Bearer ' + apiKey, 'Content-Type': 'application/json' },
+      body: {
+        model,
+        messages,
+        ...(isReasoningModel(model) || typeof temperature !== 'number' ? {} : { temperature }),
+      },
+    }),
+    parseResponse: j => ({
+      text: (j.choices?.[0]?.message?.content || '').trim(),
+      usage: j.usage,
+    }),
+  },
+  grok: {
+    keyField: 'grokApiKey',
+    label: 'Grok',
+    buildRequest: (apiKey, model, messages, temperature) => ({
+      url: GROK_URL,
+      headers: { Authorization: 'Bearer ' + apiKey, 'Content-Type': 'application/json' },
+      body: {
+        model,
+        messages,
+        ...(isReasoningModel(model) || typeof temperature !== 'number' ? {} : { temperature }),
+      },
+    }),
+    parseResponse: j => ({
+      text: (j.choices?.[0]?.message?.content || '').trim(),
+      usage: j.usage,
+    }),
+  },
+  gemini: {
+    keyField: 'geminiApiKey',
+    label: 'Gemini',
+    buildRequest: (apiKey, model, messages, temperature) => {
+      const systemParts = messages.filter(m => m.role === 'system').map(m => ({ text: m.content }));
+      const convoMsgs   = messages.filter(m => m.role !== 'system');
+      const body = {
+        contents: convoMsgs.map(m => ({
+          role: m.role === 'assistant' ? 'model' : 'user',
+          parts: [{ text: m.content }],
+        })),
+        generationConfig: typeof temperature === 'number' ? { temperature } : {},
+      };
+      if (systemParts.length) body.systemInstruction = { parts: systemParts };
+      return {
+        url: `${GEMINI_BASE}/${model}:generateContent`,
+        // x-goog-api-key вместо ?key=… — ключ не попадает в URL/логи.
+        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+        body,
+      };
     },
-    body: JSON.stringify(body),
-  });
-  if (!r.ok) throw new Error('Gemini HTTP ' + r.status + ' ' + await r.text());
-  const j = await r.json();
-  if (j.usageMetadata) await addUsage(j.usageMetadata);
-  return (j.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
-}
-
-// — Dispatcher —
+    parseResponse: j => ({
+      text: (j.candidates?.[0]?.content?.parts?.[0]?.text || '').trim(),
+      usage: j.usageMetadata,
+    }),
+  },
+};
 
 async function callAI(provider, model, messages, temperature) {
-  switch (provider) {
-    case 'grok':   return callGrok(model, messages, temperature);
-    case 'gemini': return callGemini(model, messages, temperature);
-    default:       return callOpenAI(model, messages, temperature);
-  }
+  await checkBudget();
+  const cfg = PROVIDERS[provider] || PROVIDERS.openai;
+  const prefs = await getPrefs();
+  const apiKey = prefs[cfg.keyField];
+  if (!apiKey) throw new Error(`Missing ${cfg.label} API key`);
+  const req = cfg.buildRequest(apiKey, model, messages, temperature);
+  const j = await aiFetch(req.url, req.headers, req.body, { label: cfg.label });
+  const { text, usage } = cfg.parseResponse(j);
+  if (usage) await addUsage(usage);
+  return text;
 }
 
 // === Language helpers =======================================================
@@ -430,28 +466,14 @@ const handlers = {
   TTA_TEST_KEY: async msg => {
     const prefs = await getPrefs();
     const provider = msg.provider || 'openai';
+    const defaultModel = {
+      openai: 'gpt-4o-mini',
+      grok:   prefs.grokModel   || 'grok-3-mini',
+      gemini: prefs.geminiModel || 'gemini-2.0-flash',
+    }[provider] || 'gpt-4o-mini';
     try {
-      const ping = [{ role: 'user', content: 'ping' }];
-      let model, key;
-      if (provider === 'grok') {
-        model = prefs.grokModel || 'grok-3-mini';
-        key   = prefs.grokApiKey;
-        if (!key) throw new Error('Missing Grok API key');
-        const j = await postOpenAICompat(GROK_URL, key, model, ping, 0);
-        return { ok: true, text: j.choices?.[0]?.message?.content?.trim() || 'ok', provider };
-      }
-      if (provider === 'gemini') {
-        model = prefs.geminiModel || 'gemini-2.0-flash';
-        if (!prefs.geminiApiKey) throw new Error('Missing Gemini API key');
-        const text = await callGemini(model, ping, 0);
-        return { ok: true, text: text || 'ok', provider };
-      }
-      // openai
-      key = prefs.apiKey;
-      if (!key) throw new Error('Missing OpenAI API key');
-      model = 'gpt-4o-mini';
-      const j = await postOpenAICompat(OPENAI_URL, key, model, ping, 0);
-      return { ok: true, text: j.choices?.[0]?.message?.content?.trim() || 'ok', provider };
+      const text = await callAI(provider, defaultModel, [{ role: 'user', content: 'ping' }], 0);
+      return { ok: true, text: text || 'ok', provider };
     } catch (e) {
       return { ok: false, error: String(e), provider };
     }
@@ -461,29 +483,28 @@ const handlers = {
     const prefs = await getPrefs();
     const checks = [];
 
+    const ping = [{ role: 'user', content: 'ping' }];
+    const probe = async (provider, model) => {
+      try {
+        await callAI(provider, model, ping, 0);
+        return { ok: true };
+      } catch (e) {
+        return { ok: false, detail: String(e).slice(0, 200) };
+      }
+    };
+
     // OpenAI
     checks.push({ name: 'OpenAI key configured', ok: !!prefs.apiKey });
-    if (prefs.apiKey) {
-      try {
-        await postOpenAICompat(OPENAI_URL, prefs.apiKey, 'gpt-4o-mini', [{ role: 'user', content: 'ping' }], 0);
-        checks.push({ name: 'OpenAI reachable', ok: true });
-      } catch (e) { checks.push({ name: 'OpenAI reachable', ok: false, detail: String(e).slice(0, 200) }); }
-    }
+    if (prefs.apiKey) checks.push({ name: 'OpenAI reachable', ...(await probe('openai', 'gpt-4o-mini')) });
 
     // Grok
     if (prefs.grokApiKey) {
-      try {
-        await postOpenAICompat(GROK_URL, prefs.grokApiKey, prefs.grokModel || 'grok-3-mini', [{ role: 'user', content: 'ping' }], 0);
-        checks.push({ name: 'Grok reachable', ok: true });
-      } catch (e) { checks.push({ name: 'Grok reachable', ok: false, detail: String(e).slice(0, 200) }); }
+      checks.push({ name: 'Grok reachable', ...(await probe('grok', prefs.grokModel || 'grok-3-mini')) });
     }
 
     // Gemini
     if (prefs.geminiApiKey) {
-      try {
-        await callGemini(prefs.geminiModel || 'gemini-2.0-flash', [{ role: 'user', content: 'ping' }], 0);
-        checks.push({ name: 'Gemini reachable', ok: true });
-      } catch (e) { checks.push({ name: 'Gemini reachable', ok: false, detail: String(e).slice(0, 200) }); }
+      checks.push({ name: 'Gemini reachable', ...(await probe('gemini', prefs.geminiModel || 'gemini-2.0-flash')) });
     }
 
     // Google Translate
